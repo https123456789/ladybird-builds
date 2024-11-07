@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 */7 * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install System Dependencies
+        run: |
+          sudo apt install autoconf autoconf-archive automake build-essential ccache cmake curl \
+            fonts-liberation2 git libavcodec-dev libavformat-dev libavutil-dev libgl1-mesa-dev \
+            nasm ninja-build pkg-config qt6-base-dev qt6-tools-dev-tools qt6-wayland tar unzip \
+            zip qt6-multimedia-dev
+          wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
+            gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] \
+            https://apt.kitware.com/ubuntu/ $(lsb_release -sc) main" | \
+            sudo tee /etc/apt/sources.list.d/kitware.list
+          sudo apt update -y && sudo apt install cmake -y
+          sudo wget -O /usr/share/keyrings/llvm-snapshot.gpg.key \
+            https://apt.llvm.org/llvm-snapshot.gpg.key
+          echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg.key] \
+            https://apt.llvm.org/$(lsb_release -sc)/ llvm-toolchain-$(lsb_release -sc)-18 main" | \
+            sudo tee -a /etc/apt/sources.list.d/llvm.list
+          sudo apt update -y && sudo apt install clang-18 clangd-18 clang-format-18 clang-tidy-18 \
+            lld-18 -y
+      - name: Clone Ladybird
+        run: git clone https://github.com/LadybirdBrowser/Ladybird.git Ladybird
+      - name: Get Ladybird SHA
+        id: sha
+        run: |
+          cd Ladybird
+          git rev-parse HEAD
+          echo "::set-output name=sha::$(git rev-parse HEAD)"
+      - name: Build Ladybird
+        run: |
+          cd Ladybird
+          ./Meta/ladybird.sh build ladybird
+      - name: Save Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-result-${{ steps.sha.outputs.sha }}
+          path: |
+            Build/release/bin/Ladybird
+          if-no-files-found: error
+          retention-days: 90
