@@ -30,6 +30,15 @@ jobs:
             lld-18 -y
       - name: Clone Ladybird
         run: git clone https://github.com/LadybirdBrowser/Ladybird.git Ladybird
+      - name: Cache Build
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: Ladybird/Build
+          key: cached-ladybird-build
+      - name: Fetch Cached Build
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: echo -e "\033[33mNO CACHE\033[0m"
       - name: Get Ladybird SHA
         id: sha
         run: |
@@ -45,6 +54,6 @@ jobs:
         with:
           name: build-result-${{ steps.sha.outputs.ladybird-sha }}
           path: |
-            Build/release/bin/Ladybird
+            Ladybird/Build/release/bin/Ladybird
           if-no-files-found: error
           retention-days: 90
