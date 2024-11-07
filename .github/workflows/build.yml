@@ -48,12 +48,12 @@ jobs:
       - name: Build Ladybird
         run: |
           cd Ladybird
-          ./Meta/ladybird.sh build ladybird
+          ./Meta/ladybird.sh install
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-result-${{ steps.sha.outputs.ladybird-sha }}
           path: |
-            Ladybird/Build/release/bin/Ladybird
+            Ladybird/Build/ladybird-install-default
           if-no-files-found: error
           retention-days: 90
