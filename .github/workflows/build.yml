@@ -35,7 +35,7 @@ jobs:
         run: |
           cd Ladybird
           git rev-parse HEAD
-          echo "::set-output name=sha::$(git rev-parse HEAD)"
+          echo "ladybird-sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
       - name: Build Ladybird
         run: |
           cd Ladybird
@@ -43,7 +43,7 @@ jobs:
       - name: Save Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-result-${{ steps.sha.outputs.sha }}
+          name: build-result-${{ steps.sha.outputs.ladybird-sha }}
           path: |
             Build/release/bin/Ladybird
           if-no-files-found: error
