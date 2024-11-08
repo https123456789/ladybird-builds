@@ -11,10 +11,16 @@ jobs:
     steps:
       - name: Install System Dependencies
         run: |
-          sudo apt install autoconf autoconf-archive automake build-essential ccache cmake curl \
+          echo "deb mirror+file:/etc/apt/apt-mirrors.txt jammy-proposed main restricted universe multiverse" | \
+            sudo tee --append /etc/apt/sources.list
+          cat /etc/apt/sources.list
+          sudo snap remove --purge firefox
+          sudo apt-get purge firefox
+          sudo apt-get update -y && sudo apt-get upgrade -y
+          sudo apt install -t jammy-proposed autoconf autoconf-archive automake build-essential ccache cmake curl \
             fonts-liberation2 git libavcodec-dev libavformat-dev libavutil-dev libgl1-mesa-dev \
             nasm ninja-build pkg-config qt6-base-dev qt6-tools-dev-tools qt6-wayland tar unzip \
-            zip qt6-multimedia-dev
+            zip qt6-multimedia-dev libpulse-dev
           wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | \
             gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
           echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] \
@@ -54,6 +60,6 @@ jobs:
         with:
           name: build-result-${{ steps.sha.outputs.ladybird-sha }}
           path: |
-            Ladybird/Build/ladybird-install-default
+            Ladybird/Build
           if-no-files-found: error
           retention-days: 90
